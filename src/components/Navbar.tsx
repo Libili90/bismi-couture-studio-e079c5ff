@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ShoppingBag } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, ShoppingBag, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
   { label: "Accueil", path: "/" },
@@ -12,6 +14,9 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { totalItems } = useCart();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
@@ -20,7 +25,6 @@ const Navbar = () => {
           Bismi Couture
         </Link>
 
-        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-10">
           {navLinks.map((link) => (
             <Link
@@ -38,11 +42,24 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative text-foreground hover:text-primary transition-colors" aria-label="Panier">
+          <button
+            onClick={() => navigate(user ? "/profil" : "/connexion")}
+            className="text-foreground hover:text-primary transition-colors"
+            aria-label={user ? "Mon espace" : "Se connecter"}
+          >
+            <User size={22} strokeWidth={1.5} />
+          </button>
+          <button
+            onClick={() => navigate("/panier")}
+            className="relative text-foreground hover:text-primary transition-colors"
+            aria-label="Panier"
+          >
             <ShoppingBag size={22} strokeWidth={1.5} />
-            <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-              0
-            </span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
           </button>
           <button
             className="md:hidden text-foreground"
@@ -54,7 +71,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile nav */}
       {isOpen && (
         <div className="md:hidden bg-background border-t border-border animate-fade-in">
           <div className="flex flex-col px-6 py-6 gap-4">
@@ -72,6 +88,13 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to={user ? "/profil" : "/connexion"}
+              onClick={() => setIsOpen(false)}
+              className="font-body text-sm tracking-widest uppercase py-2 text-muted-foreground"
+            >
+              {user ? "Mon espace" : "Connexion"}
+            </Link>
           </div>
         </div>
       )}
