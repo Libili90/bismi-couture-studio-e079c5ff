@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 
 const categoryLabels: Record<string, string> = {
   all: "Toutes",
@@ -17,11 +17,7 @@ const Collection = () => {
   const [searchParams] = useSearchParams();
   const initialCat = searchParams.get("categorie") || "all";
   const [activeCategory, setActiveCategory] = useState(initialCat);
-
-  const filteredProducts =
-    activeCategory === "all"
-      ? products
-      : products.filter((p) => p.category === activeCategory);
+  const { data: products = [], isLoading } = useProducts(activeCategory);
 
   return (
     <div className="min-h-screen">
@@ -38,7 +34,6 @@ const Collection = () => {
               </h1>
             </div>
 
-            {/* Category filters */}
             <div className="flex flex-wrap justify-center gap-3 mb-14">
               {Object.entries(categoryLabels).map(([key, label]) => (
                 <button
@@ -55,14 +50,17 @@ const Collection = () => {
               ))}
             </div>
 
-            {/* Product grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {isLoading ? (
+              <p className="text-center text-muted-foreground font-body">Chargement...</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
 
-            {filteredProducts.length === 0 && (
+            {!isLoading && products.length === 0 && (
               <p className="text-center text-muted-foreground font-body mt-12">
                 Aucun produit dans cette catégorie pour le moment.
               </p>
